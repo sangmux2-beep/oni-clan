@@ -76,7 +76,8 @@ tr.me td{color:var(--acc)}
 .empty{color:var(--sub);font-size:13px;padding:10px;text-align:center}
 .spark{display:flex;align-items:flex-end;gap:3px;height:96px;margin-top:12px;padding:0 2px;border-bottom:1px solid var(--line)}
 .spark div{flex:1;background:#3a4252;border-radius:4px 4px 0 0;position:relative;min-width:0}.spark div.t10{background:var(--ok)}.spark div.chk{background:var(--acc)}
-.spark div.cp{box-shadow:inset 0 3px 0 #b79cff}.lg2 i.cpi{background:#3a4252;box-shadow:inset 0 3px 0 #b79cff}.fl{font-size:12px;color:var(--sub);font-weight:600;margin:-4px 0 8px}
+.spark div.cp{box-shadow:inset 0 3px 0 #b79cff}.lg2 i.cpi{background:#3a4252;box-shadow:inset 0 3px 0 #b79cff}.ptog{position:sticky;top:60px;z-index:2;box-shadow:0 0 0 8px var(--bg);margin:0 0 12px;display:flex}.ptog button{flex:1;font-size:15px;padding:11px 6px}.sub2{font-weight:800;font-size:14px;margin-bottom:8px}
+.fl{font-size:12px;color:var(--sub);font-weight:600;margin:-4px 0 8px}
 .spark span{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:9px;color:var(--sub);font-weight:700}
 .lg2{font-size:11px;color:var(--sub);margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.lg2 i{display:inline-block;width:9px;height:9px;border-radius:2px;background:#3a4252;margin-right:3px}.lg2 i.t10{background:var(--ok)}.lg2 i.chk{background:var(--acc)}
 .bud{display:flex;gap:10px;align-items:center;padding:8px 4px;border-top:1px solid var(--line);cursor:pointer}.bud:first-of-type{border-top:0}
@@ -410,55 +411,62 @@ async function loadM(){
 }
 const BR=['official','competitive'];
 function rankCls(r){return r===1?'chk':r<=10?'t10':''}
-async function showP(r,noPush){
+async function showP(r,noPush,tt){
   await loadM();
-  const ms=(C.byP[r.n]||[]),br=ms.filter(x=>BR.includes(x.m.type)),R=r.rk,N=r.nm,clan=new Set(C.data.rows.map(x=>x.n));
+  const all=(C.byP[r.n]||[]),R=r.rk,N=r.nm,clan=new Set(C.data.rows.map(x=>x.n));
   const col=R?(TC[R.tierEn]||'#888'):'#555',nm=disp(r.n);
+  const T=tt||C.pt||(C.m==='nm'?'official':'competitive');C.pt=T;
+  const TN={competitive:'경쟁전',official:'일반전',all:'전체'}[T];
+  const ms=T==='all'?all:all.filter(x=>x.m.type===T);
+  const big=(l,v,s)=>`<div class="bg"><b>${v??'-'}</b><span>${l}</span>${s?`<i>${s}</i>`:''}</div>`, sm=(l,v)=>`<div><b>${v??'-'}</b><span>${l}</span></div>`;
   let h=`<div class="pfbar"><button class="x" onclick="closeP()">←</button><b>${esc(nm)}</b><span></span></div>
   <div class="hero" style="--tc:${col}"><div class="pfimg${r.c===1?' c1':''}"><img src="${r.c===1?'avatar1.png':'avatar.png'}" alt="ONI"></div><div style="flex:1;min-width:0">
    <div class="hn">${esc(nm)}</div><div class="hs">${esc(r.n)} · ${r.c}클랜</div>
    ${R?`<div class="ht"><span class="tier" style="background:${col}">${R.tier}</span><b>${R.rp.toLocaleString()}</b><small>RP</small></div><div class="hs">시즌 최고 ${R.best||'-'}${R.bestRp?' · '+R.bestRp.toLocaleString()+' RP':''}</div>`:`<div class="hs" style="margin-top:6px">이번 시즌 경쟁전 기록 없음</div>`}
-  </div></div>`;
-  // 시즌 요약
-  const big=(l,v,s)=>`<div class="bg"><b>${v??'-'}</b><span>${l}</span>${s?`<i>${s}</i>`:''}</div>`, sm=(l,v)=>`<div><b>${v??'-'}</b><span>${l}</span></div>`;
-  const rkH=R?`<div class="bigs">${big('K/D',R.kd)}${big('평딜',R.dmg)}${big('평균 등수',R.avgRank)}${big('TOP10',R.top10+'%')}</div>
+  </div></div>
+  <div class="ptog seg"><button data-v="competitive" class="${T==='competitive'?'on':''}">🏆 경쟁전</button><button data-v="official" class="${T==='official'?'on':''}">🎮 일반전</button><button data-v="all" class="${T==='all'?'on':''}">전체</button></div>`;
+  // 시즌
+  const rkH=R?`<div class="sub2">🏆 경쟁전</div><div class="bigs">${big('K/D',R.kd)}${big('평딜',R.dmg)}${big('평균 등수',R.avgRank)}${big('TOP10',R.top10+'%')}</div>
    <div class="grid">${sm('판수',R.g)}${sm('치킨',R.wins+'회')}${sm('킬',R.kills)}${sm('어시',R.assists)}${sm('기절시킴',R.dbno)}${sm('헤드샷',R.hs+'%')}${sm('부활',R.revives)}${sm('평균 생존',R.surv+'분')}${sm('치킨률',R.win+'%')}</div>`:`<div class="empty">이번 시즌 경쟁전 기록이 없어요</div>`;
-  const nmH=N?`<div class="bigs">${big('K/D',N.kd)}${big('평딜',N.dmg)}${big('치킨',N.win+'%')}${big('TOP10',N.top10+'%')}</div>
+  const nmH=N?`<div class="sub2">🎮 일반전 스쿼드 · ${N.mode}</div><div class="bigs">${big('K/D',N.kd)}${big('평딜',N.dmg)}${big('치킨',N.win+'%')}${big('TOP10',N.top10+'%')}</div>
    <div class="grid">${sm('판수',N.g)}${sm('치킨',N.wins+'회')}${sm('킬',N.kills)}${sm('어시',N.assists)}${sm('기절시킴',N.dbno)}${sm('헤드샷',N.hs+'%')}${sm('최장 킬',N.long+'m')}${sm('한 판 최다킬',N.most)}${sm('평균 생존',N.surv+'분')}</div>`:`<div class="empty">이번 시즌 일반전 기록이 없어요</div>`;
-  h+=`<section><div class="st"><span>📈 시즌 ${C.data.season} 전적</span><div class="seg sm" id="ps"><button data-v="rk" class="${R?'on':''}">🏆 경쟁전</button><button data-v="nm" class="${R?'':'on'}">🎮 일반전${N?' · '+N.mode:''}</button></div></div><div id="psb">${R?rkH:nmH}</div></section>`;
-  // 최근 폼 (전체/경쟁/일반)
-  const formH=t=>{const L=t==='all'?br:br.filter(x=>x.m.type===t),f=L.slice(0,20);if(!f.length)return `<div class="empty">최근 2주 ${t==='competitive'?'경쟁전':'일반전'} 기록이 없어요</div>`;
-    const K=f.reduce((a,x)=>a+x.me[1],0),D=f.reduce((a,x)=>a+x.me[2],0),dead=f.reduce((a,x)=>a+x.me[9],0),ar=f.reduce((a,x)=>a+x.R.r,0)/f.length,ch=f.filter(x=>x.R.r===1).length,mx=Math.max(...f.map(x=>x.me[2]),300);
-    const S=t==='competitive'?(R?[R]:[]):t==='official'?(N?[N]:[]):[R,N].filter(Boolean),sg=S.reduce((a,o)=>a+o.g,0),sd=sg?Math.round(S.reduce((a,o)=>a+o.dmg*o.g,0)/sg):null,ad=Math.round(D/f.length),diff=sd?ad-sd:0;
-    const sl='시즌 평균';
-    return `<div class="fl">${t==='competitive'?'경쟁전':t==='official'?'일반전':'경쟁+일반'} 최근 ${f.length}판 · 왼쪽이 최근 · 시즌 평균도 ${t==='competitive'?'경쟁전':t==='official'?'일반전':'둘 합친'} 기준</div><div class="bigs">${big('평딜',ad,sd?`<em class="${diff>=0?'g':'r'}">${diff>=0?'▲':'▼'}${Math.abs(diff)}</em><br>${sl} ${sd}`:'')}${big('K/D',(K/Math.max(dead,1)).toFixed(2))}${big('평균 등수',ar.toFixed(1))}${big('치킨',ch+'회')}</div>
-    <div class="spark">${f.map(x=>`<div title="${MAPK[x.m.map]||x.m.map} ${x.R.r}등 ${x.me[2]}딜" class="${rankCls(x.R.r)}${t==='all'&&x.m.type==='competitive'?' cp':''}" style="height:${Math.max(4,x.me[2]/mx*100)}%"><span>${x.R.r}</span></div>`).join('')}</div>
-    <div class="lg2"><span><i class="chk"></i>치킨</span><span><i class="t10"></i>TOP10</span><span><i></i>그 외</span>${t==='all'?'<span><i class="cpi"></i>경쟁전</span>':''} · 막대 높이 = 딜량, 숫자 = 등수</div>`};
-  if(br.length){const nc=br.filter(x=>x.m.type==='competitive').length,no=br.length-nc,ft=nc>=no?'competitive':'official';
-    h+=`<section><div class="st"><span>🔥 최근 20판 폼</span><div class="seg sm" id="fs"><button data-v="competitive" class="${ft==='competitive'?'on':''}">🏆 경쟁전</button><button data-v="official" class="${ft==='official'?'on':''}">🎮 일반전</button><button data-v="all">전체</button></div></div><div id="fsb">${formH(ft)}</div></section>`}
+  h+=`<section><div class="st"><span>📈 시즌 ${C.data.season} ${TN} 전적</span></div>${T==='competitive'?rkH:T==='official'?nmH:rkH+'<div style="height:12px"></div>'+nmH}</section>`;
+  // 최근 20판 폼
+  const brs=T==='all'?ms.filter(x=>BR.includes(x.m.type)):ms,f=brs.slice(0,20);
+  h+=`<section><div class="st"><span>🔥 ${TN} 최근 20판 폼</span><small>왼쪽이 최근</small></div>`;
+  if(f.length){const K=f.reduce((a,x)=>a+x.me[1],0),D=f.reduce((a,x)=>a+x.me[2],0),dead=f.reduce((a,x)=>a+x.me[9],0),ar=f.reduce((a,x)=>a+x.R.r,0)/f.length,ch=f.filter(x=>x.R.r===1).length,mx=Math.max(...f.map(x=>x.me[2]),300);
+    const S=T==='competitive'?(R?[R]:[]):T==='official'?(N?[N]:[]):[R,N].filter(Boolean),sg=S.reduce((a,o)=>a+o.g,0),sd=sg?Math.round(S.reduce((a,o)=>a+o.dmg*o.g,0)/sg):null,ad=Math.round(D/f.length),diff=sd?ad-sd:0;
+    h+=`<div class="fl">최근 ${f.length}판${T==='all'?' (경쟁+일반)':''} · 시즌 평균도 ${TN} 기준</div><div class="bigs">${big('평딜',ad,sd?`<em class="${diff>=0?'g':'r'}">${diff>=0?'▲':'▼'}${Math.abs(diff)}</em><br>시즌 평균 ${sd}`:'')}${big('K/D',(K/Math.max(dead,1)).toFixed(2))}${big('평균 등수',ar.toFixed(1))}${big('치킨',ch+'회')}</div>
+    <div class="spark">${f.map(x=>`<div title="${MAPK[x.m.map]||x.m.map} ${x.R.r}등 ${x.me[2]}딜" class="${rankCls(x.R.r)}${T==='all'&&x.m.type==='competitive'?' cp':''}" style="height:${Math.max(4,x.me[2]/mx*100)}%"><span>${x.R.r}</span></div>`).join('')}</div>
+    <div class="lg2"><span><i class="chk"></i>치킨</span><span><i class="t10"></i>TOP10</span><span><i></i>그 외</span>${T==='all'?'<span><i class="cpi"></i>경쟁전</span>':''} · 막대 높이 = 딜량, 숫자 = 등수</div>`}
+  else h+=`<div class="empty">최근 2주 ${TN} 기록이 없어요</div>`;
+  h+=`</section>`;
   // 자주 같이 하는 클랜원
   const bud={};for(const x of ms){if(x.m.type==='trainingroom')continue;for(const p of x.R.p){if(p[0]===r.n||!clan.has(p[0]))continue;const b=bud[p[0]]=bud[p[0]]||{g:0,r:0,w:0,last:x.m.t};b.g++;b.r+=x.R.r;b.w+=x.R.r===1?1:0}}
   const bl=Object.entries(bud).sort((a,b)=>b[1].g-a[1].g).slice(0,8);
-  h+=`<section><div class="st"><span>🤝 자주 같이 하는 클랜원</span><small>최근 2주</small></div>`;
+  h+=`<section><div class="st"><span>🤝 ${TN} 자주 같이 하는 클랜원</span><small>최근 2주</small></div>`;
   if(bl.length){const mg=bl[0][1].g;h+=bl.map(([n,b],i)=>`<div class="bud" data-n="${esc(n)}"><div class="av s">${esc([...disp(n)][0])}</div><div style="flex:1;min-width:0"><div class="row"><b>${i===0?'💛 ':''}${esc(disp(n))}</b><span><b>${b.g}</b>판</span></div>
      <div class="bb"><i style="width:${b.g/mg*100}%"></i></div><div class="bs">${C.names?esc(n)+' · ':''}같이 평균 ${(b.r/b.g).toFixed(1)}등 · 치킨 ${b.w}회 · ${ago(b.last)}</div></div></div>`).join('')}
-  else h+=`<div class="empty">최근 2주 동안 클랜원이랑 같이 한 판이 없어요</div>`;
+  else h+=`<div class="empty">최근 2주 ${TN}에서 클랜원이랑 같이 한 판이 없어요</div>`;
   h+=`</section>`;
   // 맵별
-  if(br.length){const mp={};for(const x of br){const k=MAPK[x.m.map]||x.m.map,o=mp[k]=mp[k]||{g:0,r:0,d:0,k:0,w:0};o.g++;o.r+=x.R.r;o.d+=x.me[2];o.k+=x.me[1];o.w+=x.R.r===1}
-    h+=`<section><div class="st"><span>🗺️ 맵별 기록</span><small>최근 2주 일반+경쟁</small></div><table class="mt"><tr><th>맵</th><th>판</th><th>평균 등수</th><th>평딜</th><th>킬/판</th><th>치킨</th></tr>${Object.entries(mp).sort((a,b)=>b[1].g-a[1].g).map(([k,o])=>`<tr><td>${k}</td><td>${o.g}</td><td>${(o.r/o.g).toFixed(1)}</td><td>${Math.round(o.d/o.g)}</td><td>${(o.k/o.g).toFixed(1)}</td><td>${o.w}</td></tr>`).join('')}</table></section>`}
+  h+=`<section><div class="st"><span>🗺️ ${TN} 맵별 기록</span><small>최근 2주</small></div>`;
+  if(brs.length){const mp={};for(const x of brs){const k=MAPK[x.m.map]||x.m.map,o=mp[k]=mp[k]||{g:0,r:0,d:0,k:0,w:0};o.g++;o.r+=x.R.r;o.d+=x.me[2];o.k+=x.me[1];o.w+=x.R.r===1}
+    h+=`<table class="mt"><tr><th>맵</th><th>판</th><th>평균 등수</th><th>평딜</th><th>킬/판</th><th>치킨</th></tr>${Object.entries(mp).sort((a,b)=>b[1].g-a[1].g).map(([k,o])=>`<tr><td>${k}</td><td>${o.g}</td><td>${(o.r/o.g).toFixed(1)}</td><td>${Math.round(o.d/o.g)}</td><td>${(o.k/o.g).toFixed(1)}</td><td>${o.w}</td></tr>`).join('')}</table>`}
+  else h+=`<div class="empty">최근 2주 ${TN} 기록이 없어요</div>`;
+  h+=`</section>`;
   // 매치 기록
-  h+=`<section><div class="st"><span>🧾 매치 기록</span><small>최근 2주 · ${ms.length}판 · 누르면 팀 기록</small></div>`;
-  if(!ms.length)h+=`<div class="empty">최근 2주 매치 기록이 없어요</div>`;
+  h+=`<section><div class="st"><span>🧾 ${TN} 매치 기록</span><small>최근 2주 · ${ms.length}판 · 누르면 팀 기록</small></div>`;
+  if(!ms.length)h+=`<div class="empty">최근 2주 ${TN} 매치 기록이 없어요</div>`;
   h+=ms.map((x,i)=>{const m=x.m,me=x.me,rk=x.R.r,br=BR.includes(m.type)||m.type==='airoyale',two=m.n===2;return `<div class="mm ${br?rankCls(rk):two&&rk===1?'win':''}" data-i="${i}"><div class="mr">${two&&!br?`<b>${rk===1?'승':'패'}</b><small>${rk===1?'승리':'패배'}</small>`:`<b>${br&&rk===1?'🍗':'#'+rk}</b><small>/${m.n}</small>`}</div>
     <div style="flex:1;min-width:0"><div class="row"><b>${MAPK[m.map]||m.map}</b><span class="mk"><b>${me[1]}</b>킬 <b>${me[2]}</b>딜</span></div>
     <div class="bs">${TYK[m.type]||m.type} · ${MODEK[m.mode]||m.mode} · ${ktime(m.t)} (${ago(m.t)})${me[3]?' · 어시 '+me[3]:''}${me[4]?' · 기절 '+me[4]:''}</div></div></div>
     <div class="md" id="md${i}"></div>`}).join('');
   h+=`</section><div class="legend" style="padding:10px 4px 30px">시즌 전적 ${C.data.updated} · 매치 ${C.M.updated||'-'} 기준 · 카카오 서버 공식 API</div>`;
-  $('ppb').innerHTML=h;$('pp').style.display='block';$('pp').scrollTop=0;document.body.style.overflow='hidden';
+  const keep=tt?$('pp').scrollTop:0;
+  $('ppb').innerHTML=h;$('pp').style.display='block';$('pp').scrollTop=keep;document.body.style.overflow='hidden';
   if(!noPush)try{history.pushState({p:r.n},'')}catch(e){}
-  if($('fs'))$('fs').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('fs').querySelectorAll('button').forEach(z=>z.classList.toggle('on',z===b));$('fsb').innerHTML=formH(b.dataset.v)});
-  $('ps').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('ps').querySelectorAll('button').forEach(z=>z.classList.toggle('on',z===b));$('psb').innerHTML=b.dataset.v==='rk'?rkH:nmH});
+  $('ppb').querySelectorAll('.ptog button').forEach(b=>b.onclick=()=>showP(r,1,b.dataset.v));
   const go=n=>{const t=C.data.rows.find(z=>z.n===n);if(t)showP(t)};
   $('ppb').querySelectorAll('.bud').forEach(e=>e.onclick=()=>go(e.dataset.n));
   $('ppb').querySelectorAll('.mm').forEach(e=>e.onclick=()=>{const i=+e.dataset.i,d=$('md'+i);if(d.innerHTML){d.innerHTML='';return}const x=ms[i];
