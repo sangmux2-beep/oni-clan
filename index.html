@@ -75,6 +75,7 @@ tr.me td{color:var(--acc)}
 .empty{color:var(--sub);font-size:13px;padding:10px;text-align:center}
 .spark{display:flex;align-items:flex-end;gap:3px;height:96px;margin-top:12px;padding:0 2px;border-bottom:1px solid var(--line)}
 .spark div{flex:1;background:#3a4252;border-radius:4px 4px 0 0;position:relative;min-width:0}.spark div.t10{background:var(--ok)}.spark div.chk{background:var(--acc)}
+.spark div.cp{box-shadow:inset 0 3px 0 #b79cff}.lg2 i.cpi{background:#3a4252;box-shadow:inset 0 3px 0 #b79cff}.fl{font-size:12px;color:var(--sub);font-weight:600;margin:-4px 0 8px}
 .spark span{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:9px;color:var(--sub);font-weight:700}
 .lg2{font-size:11px;color:var(--sub);margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.lg2 i{display:inline-block;width:9px;height:9px;border-radius:2px;background:#3a4252;margin-right:3px}.lg2 i.t10{background:var(--ok)}.lg2 i.chk{background:var(--acc)}
 .bud{display:flex;gap:10px;align-items:center;padding:8px 4px;border-top:1px solid var(--line);cursor:pointer}.bud:first-of-type{border-top:0}
@@ -424,14 +425,16 @@ async function showP(r,noPush){
   const nmH=N?`<div class="bigs">${big('K/D',N.kd)}${big('평딜',N.dmg)}${big('치킨',N.win+'%')}${big('TOP10',N.top10+'%')}</div>
    <div class="grid">${sm('판수',N.g)}${sm('치킨',N.wins+'회')}${sm('킬',N.kills)}${sm('어시',N.assists)}${sm('기절시킴',N.dbno)}${sm('헤드샷',N.hs+'%')}${sm('최장 킬',N.long+'m')}${sm('한 판 최다킬',N.most)}${sm('평균 생존',N.surv+'분')}</div>`:`<div class="empty">이번 시즌 일반전 기록이 없어요</div>`;
   h+=`<section><div class="st"><span>📈 시즌 ${C.data.season} 전적</span><div class="seg sm" id="ps"><button data-v="rk" class="${R?'on':''}">🏆 경쟁전</button><button data-v="nm" class="${R?'':'on'}">🎮 일반전${N?' · '+N.mode:''}</button></div></div><div id="psb">${R?rkH:nmH}</div></section>`;
-  // 최근 폼
-  const f=br.slice(0,20);
-  if(f.length){const K=f.reduce((a,x)=>a+x.me[1],0),D=f.reduce((a,x)=>a+x.me[2],0),dead=f.reduce((a,x)=>a+x.me[9],0),ar=f.reduce((a,x)=>a+x.R.r,0)/f.length,ch=f.filter(x=>x.R.r===1).length,mx=Math.max(...f.map(x=>x.me[2]),300);
-    const sg=(R?R.g:0)+(N?N.g:0),sd=sg?Math.round(((R?R.dmg*R.g:0)+(N?N.dmg*N.g:0))/sg):null,ad=Math.round(D/f.length),diff=sd?ad-sd:0;
-    h+=`<section><div class="st"><span>🔥 최근 ${f.length}판 폼</span><small>일반+경쟁 · 왼쪽이 최근</small></div>
-    <div class="bigs">${big('평딜',ad,sd?`<em class="${diff>=0?'g':'r'}">${diff>=0?'▲':'▼'}${Math.abs(diff)}</em><br>시즌 평균 ${sd}`:'')}${big('K/D',(K/Math.max(dead,1)).toFixed(2))}${big('평균 등수',ar.toFixed(1))}${big('치킨',ch+'회')}</div>
-    <div class="spark">${f.map(x=>`<div title="${MAPK[x.m.map]||x.m.map} ${x.R.r}등 ${x.me[2]}딜" class="${rankCls(x.R.r)}" style="height:${Math.max(4,x.me[2]/mx*100)}%"><span>${x.R.r}</span></div>`).join('')}</div>
-    <div class="lg2"><span><i class="chk"></i>치킨</span><span><i class="t10"></i>TOP10</span><span><i></i>그 외</span> · 막대 높이 = 딜량, 숫자 = 등수</div></section>`}
+  // 최근 폼 (전체/경쟁/일반)
+  const formH=t=>{const L=t==='all'?br:br.filter(x=>x.m.type===t),f=L.slice(0,20);if(!f.length)return `<div class="empty">최근 2주 ${t==='competitive'?'경쟁전':'일반전'} 기록이 없어요</div>`;
+    const K=f.reduce((a,x)=>a+x.me[1],0),D=f.reduce((a,x)=>a+x.me[2],0),dead=f.reduce((a,x)=>a+x.me[9],0),ar=f.reduce((a,x)=>a+x.R.r,0)/f.length,ch=f.filter(x=>x.R.r===1).length,mx=Math.max(...f.map(x=>x.me[2]),300);
+    const S=t==='competitive'?(R?[R]:[]):t==='official'?(N?[N]:[]):[R,N].filter(Boolean),sg=S.reduce((a,o)=>a+o.g,0),sd=sg?Math.round(S.reduce((a,o)=>a+o.dmg*o.g,0)/sg):null,ad=Math.round(D/f.length),diff=sd?ad-sd:0;
+    const sl='시즌 평균';
+    return `<div class="fl">${t==='competitive'?'경쟁전':t==='official'?'일반전':'경쟁+일반'} 최근 ${f.length}판 · 왼쪽이 최근 · 시즌 평균도 ${t==='competitive'?'경쟁전':t==='official'?'일반전':'둘 합친'} 기준</div><div class="bigs">${big('평딜',ad,sd?`<em class="${diff>=0?'g':'r'}">${diff>=0?'▲':'▼'}${Math.abs(diff)}</em><br>${sl} ${sd}`:'')}${big('K/D',(K/Math.max(dead,1)).toFixed(2))}${big('평균 등수',ar.toFixed(1))}${big('치킨',ch+'회')}</div>
+    <div class="spark">${f.map(x=>`<div title="${MAPK[x.m.map]||x.m.map} ${x.R.r}등 ${x.me[2]}딜" class="${rankCls(x.R.r)}${t==='all'&&x.m.type==='competitive'?' cp':''}" style="height:${Math.max(4,x.me[2]/mx*100)}%"><span>${x.R.r}</span></div>`).join('')}</div>
+    <div class="lg2"><span><i class="chk"></i>치킨</span><span><i class="t10"></i>TOP10</span><span><i></i>그 외</span>${t==='all'?'<span><i class="cpi"></i>경쟁전</span>':''} · 막대 높이 = 딜량, 숫자 = 등수</div>`};
+  if(br.length){const nc=br.filter(x=>x.m.type==='competitive').length,no=br.length-nc,ft=nc>=no?'competitive':'official';
+    h+=`<section><div class="st"><span>🔥 최근 20판 폼</span><div class="seg sm" id="fs"><button data-v="competitive" class="${ft==='competitive'?'on':''}">🏆 경쟁전</button><button data-v="official" class="${ft==='official'?'on':''}">🎮 일반전</button><button data-v="all">전체</button></div></div><div id="fsb">${formH(ft)}</div></section>`}
   // 자주 같이 하는 클랜원
   const bud={};for(const x of ms){if(x.m.type==='trainingroom')continue;for(const p of x.R.p){if(p[0]===r.n||!clan.has(p[0]))continue;const b=bud[p[0]]=bud[p[0]]||{g:0,r:0,w:0,last:x.m.t};b.g++;b.r+=x.R.r;b.w+=x.R.r===1?1:0}}
   const bl=Object.entries(bud).sort((a,b)=>b[1].g-a[1].g).slice(0,8);
@@ -453,6 +456,7 @@ async function showP(r,noPush){
   h+=`</section><div class="legend" style="padding:10px 4px 30px">시즌 전적 ${C.data.updated} · 매치 ${C.M.updated||'-'} 기준 · 카카오 서버 공식 API</div>`;
   $('ppb').innerHTML=h;$('pp').style.display='block';$('pp').scrollTop=0;document.body.style.overflow='hidden';
   if(!noPush)try{history.pushState({p:r.n},'')}catch(e){}
+  if($('fs'))$('fs').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('fs').querySelectorAll('button').forEach(z=>z.classList.toggle('on',z===b));$('fsb').innerHTML=formH(b.dataset.v)});
   $('ps').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('ps').querySelectorAll('button').forEach(z=>z.classList.toggle('on',z===b));$('psb').innerHTML=b.dataset.v==='rk'?rkH:nmH});
   const go=n=>{const t=C.data.rows.find(z=>z.n===n);if(t)showP(t)};
   $('ppb').querySelectorAll('.bud').forEach(e=>e.onclick=()=>go(e.dataset.n));
