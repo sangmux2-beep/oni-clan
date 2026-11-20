@@ -44,7 +44,6 @@
 2|Oni_Woni
 2|Oni_Dupen
 2|Oni_Hakatory
-2|Oni_Onslow
 2|Oni_rang
 2|Oni_Neon
 2|Oni_KWANG
