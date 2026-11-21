@@ -66,7 +66,6 @@
 2|Oni_Som
 2|Oni_Land
 2|Oni_ScHoRy
-2|Oni_BaeChu
 2|Oni_Sin
 2|Oni_Bug
 2|Oni_Eden
