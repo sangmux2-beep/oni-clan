@@ -66,13 +66,10 @@
 2|Oni_Som
 2|Oni_Land
 2|Oni_ScHoRy
-2|Oni_Hoooong
 2|Oni_BaeChu
 2|Oni_Sin
 2|Oni_Bug
-2|Oni_MAGNUM_RIFLE
 2|Oni_Eden
-2|Oni_RURE
 2|Oni_YuL7H
 2|Oni_N3
 2|Oni_Molly
